@@ -2,7 +2,6 @@ import pandas as pd
 from surprise import Dataset, Reader, SVD
 from surprise.model_selection import train_test_split
 
-
 df_merged_input_user = pd.read_csv('./data/merged_df.csv')
 
 df_movie = pd.read_csv('./data/movie_data.csv', lineterminator='\n')
