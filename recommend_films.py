@@ -55,3 +55,7 @@ user_unrated_movies = user_unrated_movies.sort_values(by='predicted_rating', asc
 
 # Display the movie recommendations
 print(user_unrated_movies[['movie_title', 'predicted_rating']].head(10))
+
+# Export the top 50 predicted movies to a CSV file
+top_predicted_movies = user_unrated_movies[['movie_title', 'predicted_rating']].head(50)
+top_predicted_movies.to_csv('top_predicted_movies.csv', index=False)

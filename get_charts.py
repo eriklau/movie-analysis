@@ -241,3 +241,13 @@ def show_scatterplots():
     plt.title('Scatterplot: Release Year vs Average User Rating')
     plt.grid(True)
     plt.show()
+
+show_years()
+show_decades()
+show_actors()
+show_actors_table()
+show_deviation_above()
+show_deviation_below()
+show_directors()
+show_directors_table()
+show_scatterplots()
