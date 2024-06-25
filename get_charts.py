@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
+import altair as alt
 from tabulate import tabulate
 
 # df_merged = pd.read_csv('./data/merged_df.csv')
@@ -30,40 +31,61 @@ from tabulate import tabulate
 # print(type(df_deviation['rating'][0]))
 # print(type(df_deviation['avg_rating'][0]))
 
+import altair as alt
+
+import altair as alt
 
 def show_years(df_film, df_rating):
-    # Merge df_film and df_rating
     df_rating_merged = pd.merge(df_film, df_rating)
+    df_rating_merged['year'] = df_rating_merged['year'].astype(int)
+    df_years = df_rating_merged.groupby('year').size().reset_index(name='count')
+    all_years = pd.DataFrame({'year': range(df_years['year'].min(), df_years['year'].max() + 1)})
+    df_years = all_years.merge(df_years, on='year', how='left').fillna(0.5)
 
-    # Replace True/False in 'liked' column with 'Liked'/'Not Liked'
-    df_rating_merged['liked'] = df_rating_merged['liked'].map({True: 'Liked', False: 'Not Liked'})
+    chart = alt.Chart(df_years).mark_bar().encode(
+        x=alt.X('year:O', axis=alt.Axis(labelAngle=90)),
+        y='count:Q',
+        color=alt.condition(
+        alt.datum.count > 0.5,
+        alt.value('#00b0f0'),  # Blue for movies watched
+        alt.value('#A9A9A9')  # Grey for no films
+    ),
+        tooltip=['year', 'count']
+    ).properties(
+        title='By Release Year',
+        width=800,
+        height=400
+    )
 
-    # Create a pivot table to get counts of liked and not liked movies for each year
-    pivot_table = df_rating_merged.pivot_table(index='year', columns='liked', values='id', aggfunc='count', fill_value=0)
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    ).configure_axisX(
+        labelAngle=0,
+        labelOverlap=True,
+        labelFontSize=10,
+        tickCount=10,
+        labelExpr="datum.value % 10 === 0 ? datum.label : ''"
+    )
 
-    # Ensure the pivot table has both 'Liked' and 'Not Liked' columns
-    if 'Liked' not in pivot_table.columns:
-        pivot_table['Liked'] = 0
-    if 'Not Liked' not in pivot_table.columns:
-        pivot_table['Not Liked'] = 0
+    st.altair_chart(chart, use_container_width=True)
 
-    # Reverse the order of columns to switch stacking order
-    pivot_table = pivot_table[['Liked', 'Not Liked']] 
 
-    # Create the stacked bar graph
-    fig, ax = plt.subplots(figsize=(10, 6))
-    pivot_table.plot(kind='bar', stacked=True, ax=ax, color=['#ff8000','#00b020'], edgecolor='black')
-
-    # Set labels and title
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Count')
-    ax.set_title('Movies Liked and Not Liked by Year')
-
-    # Rotate x-axis labels for better visibility
-    plt.xticks(rotation=90)
-
-    # Show the plot
-    st.pyplot(fig)
+# def show_years(df_film, df_rating):
+#     df_rating_merged = pd.merge(df_film, df_rating)
+#     df_years = df_rating_merged.groupby('year').size().reset_index(name='count')
+#     chart = alt.Chart(df_years).mark_bar().encode(
+#         x=alt.X('year:O', axis=alt.Axis(labelAngle=0), title='Release Year'),
+#         y=alt.Y('count:Q', title='Count of Movies Watched'),
+#         tooltip=['year', 'count']
+#     ).properties(
+#         title='Movies Watched by Release Year'
+#     )
+#     st.altair_chart(chart, use_container_width=True)
 
 def show_decades(df_film, df_rating):
     # Merge df_film and df_rating

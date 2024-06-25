@@ -47,7 +47,6 @@ def main():
             st.header(username + "'s all-time stats")
             # number of: films, hours, directors, countries, etc.
 
-            st.header("BY YEAR")
             show_years(df_film, df_rating)
             st.header("BY DECADE")
             show_decades(df_film, df_rating)
