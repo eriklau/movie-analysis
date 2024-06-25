@@ -1,33 +1,37 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 from tabulate import tabulate
 
-df_merged = pd.read_csv('./data/merged_df.csv')
-df_film = pd.read_csv('./data/df_film.csv')
-df_rating = pd.read_csv('./data/df_rating.csv')
-df_actor = pd.read_csv('./data/df_actor.csv')
-df_director = pd.read_csv('./data/df_director.csv')
-df_genre = pd.read_csv('./data/df_genre.csv')
+# df_merged = pd.read_csv('./data/merged_df.csv')
+# df_film = pd.read_csv('./data/df_film.csv')
+# df_rating = pd.read_csv('./data/df_rating.csv')
+# df_actor = pd.read_csv('./data/df_actor.csv')
+# df_director = pd.read_csv('./data/df_director.csv')
+# df_genre = pd.read_csv('./data/df_genre.csv')
 
-df_director_merged = pd.merge(df_film, df_director)
-# Calculate aggregate values for directors and actors
-df_temp_director = pd.merge(df_director_merged.groupby(['director', 'director_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
-                            df_director['director'].value_counts().reset_index().rename(columns = {'index':'director', 'director':'count'}))
+# df_director_merged = pd.merge(df_film, df_director)
+# # Calculate aggregate values for directors and actors
+# df_temp_director = pd.merge(df_director_merged.groupby(['director', 'director_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
+#                             df_director['director'].value_counts().reset_index().rename(columns = {'index':'director', 'director':'count'}))
 
-df_actor_merged = pd.merge(df_film, df_actor)
-df_temp_actor = pd.merge(df_actor_merged.groupby(['actor', 'actor_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
-                        df_actor['actor'].value_counts().reset_index().rename(columns = {'index':'actor', 'actor':'count'}))
+# df_actor_merged = pd.merge(df_film, df_actor)
+# df_temp_actor = pd.merge(df_actor_merged.groupby(['actor', 'actor_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
+#                         df_actor['actor'].value_counts().reset_index().rename(columns = {'index':'actor', 'actor':'count'}))
 
-df_temp_director = df_temp_director.sort_values('count', ascending=False).reset_index(drop=True)
-n_director = df_temp_director.iloc[9]['count']
-df_temp_director = df_temp_director[df_temp_director['count']>=n_director]
+# df_temp_director = df_temp_director.sort_values('count', ascending=False).reset_index(drop=True)
+# n_director = df_temp_director.iloc[9]['count']
+# df_temp_director = df_temp_director[df_temp_director['count']>=n_director]
 
-df_deviation = df_merged[['title', 'avg_rating', 'rating']]
-df_deviation['rating_difference'] = df_deviation['rating'] - df_deviation['avg_rating']
+# df_deviation = df_merged[['title', 'avg_rating', 'rating']]
+# df_deviation['rating_difference'] = df_deviation['rating'] - df_deviation['avg_rating']
+
+# print(type(df_deviation['rating'][0]))
+# print(type(df_deviation['avg_rating'][0]))
 
 
-def show_years():
+def show_years(df_film, df_rating):
     # Merge df_film and df_rating
     df_rating_merged = pd.merge(df_film, df_rating)
 
@@ -37,8 +41,14 @@ def show_years():
     # Create a pivot table to get counts of liked and not liked movies for each year
     pivot_table = df_rating_merged.pivot_table(index='year', columns='liked', values='id', aggfunc='count', fill_value=0)
 
+    # Ensure the pivot table has both 'Liked' and 'Not Liked' columns
+    if 'Liked' not in pivot_table.columns:
+        pivot_table['Liked'] = 0
+    if 'Not Liked' not in pivot_table.columns:
+        pivot_table['Not Liked'] = 0
+
     # Reverse the order of columns to switch stacking order
-    pivot_table = pivot_table[['Liked', 'Not Liked']]  # <-- Switched the order here
+    pivot_table = pivot_table[['Liked', 'Not Liked']] 
 
     # Create the stacked bar graph
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -53,10 +63,9 @@ def show_years():
     plt.xticks(rotation=90)
 
     # Show the plot
-    plt.tight_layout()
-    plt.show()
+    st.pyplot(fig)
 
-def show_decades():
+def show_decades(df_film, df_rating):
     # Merge df_film and df_rating
     df_rating_merged = pd.merge(df_film, df_rating)
 
@@ -64,10 +73,16 @@ def show_decades():
     df_rating_merged['liked'] = df_rating_merged['liked'].map({True: 'Liked', False: 'Not Liked'})
 
     # Extract decade from the 'year' column and create a new 'decade' column
-    df_rating_merged['decade'] = df_rating_merged['year'] // 10 * 10
+    df_rating_merged['decade'] = df_rating_merged['year']
 
     # Create a pivot table to get counts of liked and not liked movies for each decade
     pivot_table = df_rating_merged.pivot_table(index='decade', columns='liked', values='id', aggfunc='count', fill_value=0)
+
+    # Ensure the pivot table has both 'Liked' and 'Not Liked' columns
+    if 'Liked' not in pivot_table.columns:
+        pivot_table['Liked'] = 0
+    if 'Not Liked' not in pivot_table.columns:
+        pivot_table['Not Liked'] = 0
 
     # Reverse the order of columns to switch stacking order
     pivot_table = pivot_table[['Liked', 'Not Liked']]  # <-- Switched the order here
@@ -85,19 +100,17 @@ def show_decades():
     plt.xticks(rotation=45)
 
     # Show the plot
-    plt.tight_layout()
-    plt.show()
+    st.pyplot(fig)
 
-def show_directors_table():
+def show_directors_table(df_temp_director):
     # Display the top 10 directors in a table
     tabulate(df_temp_director.sort_values('count', ascending=False).head(10), headers='keys', tablefmt='pretty', showindex=False)
 
-def show_actors_table():
+def show_actors_table(df_temp_actor):
     # Display the top 10 actors in a table
     tabulate(df_temp_actor.sort_values('count', ascending=False).head(10), headers='keys', tablefmt='pretty', showindex=False)
 
-
-def show_directors():
+def show_directors(df_director_merged, df_temp_director):
     # Filter the DataFrame to include only directors present in df_temp_director
     filtered_directors = df_director_merged[df_director_merged['director'].isin(df_temp_director['director'])]
 
@@ -136,9 +149,9 @@ def show_directors():
     plt.legend()
 
     # Display the plot
-    plt.show()
+    st.pyplot(fig)
 
-def show_actors():
+def show_actors(df_actor_merged, df_temp_actor):
     # Filter the DataFrame to include only actors present in df_temp_actor
     filtered_actors = df_actor_merged[df_actor_merged['actor'].isin(df_temp_actor['actor'])]
 
@@ -177,9 +190,9 @@ def show_actors():
     plt.legend()
 
     # Display the plot
-    plt.show()
+    st.pyplot(fig)
 
-def show_deviation_below():
+def show_deviation_below(df_deviation):
     # Sort the DataFrame by "rating_difference" in ascending order
     lowest_deviation_movies = df_deviation.sort_values('rating_difference', ascending=True)
 
@@ -193,11 +206,11 @@ def show_deviation_below():
     plt.ylabel('Movie Title')
     plt.title('Top 10 Movies with Lowest Rating Deviation')
     plt.gca().invert_yaxis()  # Invert y-axis to have the movie with the lowest deviation at the top
-    plt.show()
+    st.pyplot(plt)
 
 
 
-def show_deviation_above():
+def show_deviation_above(df_deviation):
     # Sort the DataFrame by "rating_difference" in descending order
     highest_deviation_movies = df_deviation.sort_values('rating_difference', ascending=False)
 
@@ -211,10 +224,10 @@ def show_deviation_above():
     plt.ylabel('Movie Title')
     plt.title('Top 10 Movies with Highest Rating Deviation')
     plt.gca().invert_yaxis()  # Invert y-axis to have the movie with the highest deviation at the top
-    plt.show()
+    st.pyplot(plt)
 
 
-def show_scatterplots():
+def show_scatterplots(df_merged):
     # Number of Likes vs Number of Watches
     plt.figure(figsize=(10, 6))
     plt.scatter(df_merged['liked_by'], df_merged['watched_by'], alpha=0.5)
@@ -241,13 +254,3 @@ def show_scatterplots():
     plt.title('Scatterplot: Release Year vs Average User Rating')
     plt.grid(True)
     plt.show()
-
-show_years()
-show_decades()
-show_actors()
-show_actors_table()
-show_deviation_above()
-show_deviation_below()
-show_directors()
-show_directors_table()
-show_scatterplots()
