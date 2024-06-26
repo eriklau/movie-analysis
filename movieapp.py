@@ -7,6 +7,8 @@ from get_films import transform_ratings, scrape_films, scrape_films_details
 from get_charts import show_years, show_avg_rating_by_year, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots
 from recommend_films import recommend_movies
 
+st.set_page_config(layout="wide")
+
 def main():
     st.title("LETTERBOXD PROFILE ANALYZER")
 
@@ -48,16 +50,24 @@ def main():
             # number of: films, hours, directors, countries, etc.
 
             st.header("BY YEAR")
-            show_years(df_film, df_rating)
-            show_avg_rating_by_year(df_film, df_rating)
+            col1, col2 = st.columns(2)
+            with col1:
+                show_years(df_film, df_rating)
+            with col2:
+                show_avg_rating_by_year(df_film, df_rating)
+
             st.header("BY DECADE")
             show_decades(df_film, df_rating)
+
             st.header("BY ACTOR")
             show_actors(df_actor_merged, df_temp_actor)
+
             st.header("BY DIRECTOR")
             show_directors(df_director_merged, df_temp_director)
+
             st.header("RATED HIGHER THAN AVERAGE")
             show_deviation_above(df_deviation)
+            
             st.header("RATED LOWER THAN AVERAGE")
             show_deviation_below(df_deviation)
             # show_scatterplots()
