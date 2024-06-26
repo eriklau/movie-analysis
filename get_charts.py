@@ -41,18 +41,33 @@ def show_years(df_film, df_rating):
     df_years = df_rating_merged.groupby('year').size().reset_index(name='count')
     all_years = pd.DataFrame({'year': range(df_years['year'].min(), df_years['year'].max() + 1)})
     df_years = all_years.merge(df_years, on='year', how='left').fillna(0.5)
+    df_years['tooltip_count'] = df_years['count'].apply(lambda x: 0 if x == 0.5 else x)
 
-    chart = alt.Chart(df_years).mark_bar().encode(
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(df_years).mark_bar().encode(
         x=alt.X('year:O', axis=alt.Axis(labelAngle=90)),
         y='count:Q',
         color=alt.condition(
-        alt.datum.count > 0.5,
-        alt.value('#00b0f0'),  # Blue for movies watched
-        alt.value('#A9A9A9')  # Grey for no films
-    ),
-        tooltip=['year', 'count']
+            alt.datum.count > 0.5,
+            alt.value('#00b0f0'),
+            alt.value('#A9A9A9') 
+        ),
+        tooltip=[alt.Tooltip('year:O', title='Year'), alt.Tooltip('tooltip_count:Q', title='Count')]
+    )
+
+    hover = alt.Chart(df_years).mark_bar(color='lightblue').encode(
+        x=alt.X('year:O', axis=alt.Axis(labelAngle=90)),
+        y='count:Q',
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
     ).properties(
-        title='By Release Year',
+        title='Films',
         width=800,
         height=400
     )
@@ -74,18 +89,68 @@ def show_years(df_film, df_rating):
 
     st.altair_chart(chart, use_container_width=True)
 
+import altair as alt
+import pandas as pd
+import streamlit as st
 
-# def show_years(df_film, df_rating):
-#     df_rating_merged = pd.merge(df_film, df_rating)
-#     df_years = df_rating_merged.groupby('year').size().reset_index(name='count')
-#     chart = alt.Chart(df_years).mark_bar().encode(
-#         x=alt.X('year:O', axis=alt.Axis(labelAngle=0), title='Release Year'),
-#         y=alt.Y('count:Q', title='Count of Movies Watched'),
-#         tooltip=['year', 'count']
-#     ).properties(
-#         title='Movies Watched by Release Year'
-#     )
-#     st.altair_chart(chart, use_container_width=True)
+def show_avg_rating_by_year(df_film, df_rating):
+    df_rating_merged = pd.merge(df_film, df_rating, on='id')
+    df_rating_merged['year'] = df_rating_merged['year'].astype(int)
+
+    df_avg_rating = df_rating_merged.groupby('year')['rating'].mean().reset_index()
+    all_years = pd.DataFrame({'year': range(df_avg_rating['year'].min(), df_avg_rating['year'].max() + 1)})
+    df_avg_rating = all_years.merge(df_avg_rating, on='year', how='left').fillna(0.5)
+    df_avg_rating['tooltip_avg_rating'] = df_avg_rating['rating'].apply(lambda x: 0 if x == 0.5 else x)
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(df_avg_rating).mark_bar().encode(
+        x=alt.X('year:O', axis=alt.Axis(labelAngle=90)),
+        y='rating:Q',
+        color=alt.condition(
+            alt.datum.rating > 0.5,
+            alt.value('#ff8000'),  # Orange for average rating
+            alt.value('#A9A9A9')  # Grey for no rating
+        ),
+        tooltip=[alt.Tooltip('year:O', title='Year'), alt.Tooltip('tooltip_avg_rating:Q', title='Average Rating')]
+    )
+
+    hover = alt.Chart(df_avg_rating).mark_bar(color='#ffa500').encode(
+        x=alt.X('year:O', axis=alt.Axis(labelAngle=90)),
+        y='rating:Q',
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title='Ratings',
+        width=800,
+        height=400
+    )
+
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    ).configure_axisX(
+        labelAngle=0,
+        labelOverlap=True,
+        labelFontSize=10,
+        tickCount=10,
+        labelExpr="datum.value % 10 === 0 ? datum.label : ''"
+    ).configure_axisY(
+        title='Average Rating',
+        labels=False,
+        titleColor='#ffffff'
+    )
+
+    st.altair_chart(chart, use_container_width=True)
 
 def show_decades(df_film, df_rating):
     # Merge df_film and df_rating

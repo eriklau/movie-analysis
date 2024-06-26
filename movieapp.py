@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details
-from get_charts import show_years, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots
+from get_charts import show_years, show_avg_rating_by_year, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots
 from recommend_films import recommend_movies
 
 def main():
@@ -47,7 +47,9 @@ def main():
             st.header(username + "'s all-time stats")
             # number of: films, hours, directors, countries, etc.
 
+            st.header("BY YEAR")
             show_years(df_film, df_rating)
+            show_avg_rating_by_year(df_film, df_rating)
             st.header("BY DECADE")
             show_decades(df_film, df_rating)
             st.header("BY ACTOR")
