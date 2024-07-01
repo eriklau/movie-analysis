@@ -4,42 +4,15 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
 from tabulate import tabulate
+from get_films import get_top_decades, get_top_movies_for_decade
 
-# df_merged = pd.read_csv('./data/merged_df.csv')
-# df_film = pd.read_csv('./data/df_film.csv')
-# df_rating = pd.read_csv('./data/df_rating.csv')
-# df_actor = pd.read_csv('./data/df_actor.csv')
-# df_director = pd.read_csv('./data/df_director.csv')
-# df_genre = pd.read_csv('./data/df_genre.csv')
-
-# df_director_merged = pd.merge(df_film, df_director)
-# # Calculate aggregate values for directors and actors
-# df_temp_director = pd.merge(df_director_merged.groupby(['director', 'director_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
-#                             df_director['director'].value_counts().reset_index().rename(columns = {'index':'director', 'director':'count'}))
-
-# df_actor_merged = pd.merge(df_film, df_actor)
-# df_temp_actor = pd.merge(df_actor_merged.groupby(['actor', 'actor_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
-#                         df_actor['actor'].value_counts().reset_index().rename(columns = {'index':'actor', 'actor':'count'}))
-
-# df_temp_director = df_temp_director.sort_values('count', ascending=False).reset_index(drop=True)
-# n_director = df_temp_director.iloc[9]['count']
-# df_temp_director = df_temp_director[df_temp_director['count']>=n_director]
-
-# df_deviation = df_merged[['title', 'avg_rating', 'rating']]
-# df_deviation['rating_difference'] = df_deviation['rating'] - df_deviation['avg_rating']
-
-# print(type(df_deviation['rating'][0]))
-# print(type(df_deviation['avg_rating'][0]))
-
-import altair as alt
-
-import altair as alt
+DOMAIN = "https://letterboxd.com"
 
 def show_years(df_film, df_rating):
     df_rating_merged = pd.merge(df_film, df_rating)
     df_rating_merged['year'] = df_rating_merged['year'].astype(int)
     df_years = df_rating_merged.groupby('year').size().reset_index(name='count')
-    all_years = pd.DataFrame({'year': range(df_years['year'].min(), df_years['year'].max() + 1)})
+    all_years = pd.DataFrame({'year': range(df_years['year'].dropna().min(), df_years['year'].dropna().max() + 1)})
     df_years = all_years.merge(df_years, on='year', how='left').fillna(0.5)
     df_years['tooltip_count'] = df_years['count'].apply(lambda x: 0 if x == 0.5 else x)
 
@@ -88,10 +61,6 @@ def show_years(df_film, df_rating):
     )
 
     st.altair_chart(chart, use_container_width=True)
-
-import altair as alt
-import pandas as pd
-import streamlit as st
 
 def show_avg_rating_by_year(df_film, df_rating):
     df_rating_merged = pd.merge(df_film, df_rating, on='id')
@@ -151,6 +120,41 @@ def show_avg_rating_by_year(df_film, df_rating):
     )
 
     st.altair_chart(chart, use_container_width=True)
+
+def display_top_decades(df_film, df_rating, top_decades):
+    top_decades, df_rating_merged = get_top_decades(df_film, df_rating)
+    hover_css = """
+        <style>
+            .movie-poster {
+                border: 2px solid transparent;
+                transition: border-color 0.3s;
+            }
+            .movie-poster:hover {
+                border-color: white;
+            }
+        </style>
+    """
+    st.markdown(hover_css, unsafe_allow_html=True)
+
+    for _, row in top_decades.iterrows():
+        decade = row['decade']
+        avg_rating = row['avg_rating']
+        top_movies = get_top_movies_for_decade(df_rating_merged, decade)
+        
+        st.subheader(f"{int(decade)}s")
+        st.write(f"★ Average {avg_rating:.2f}")
+        
+        cols = st.columns(10)
+        top_movies = top_movies.head(20)
+
+        for idx, (i, movie) in enumerate(top_movies.iterrows()):
+            with cols[idx % 10]:
+                image_html = f'''
+                <a href="{DOMAIN + movie['link']}" target="_blank">
+                    <img src="{movie['image_url']}" width="70" class="movie-poster" alt="{movie['title']}">
+                </a>
+                '''
+                st.markdown(image_html, unsafe_allow_html=True)
 
 def show_decades(df_film, df_rating):
     # Merge df_film and df_rating

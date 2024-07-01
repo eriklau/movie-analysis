@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import streamlit as st
 import numpy as np
+import json
 
 DOMAIN = "https://letterboxd.com"
 
@@ -80,6 +81,7 @@ def scrape_films_details(df_film):
     movies_rating['watched_by'] = []
     movies_rating['liked_by'] = []
     movies_rating['runtime'] = []
+    movies_rating['image_url'] = []
     
     movies_actor = {}
     movies_actor['id'] = []
@@ -118,6 +120,12 @@ def scrape_films_details(df_film):
                     rating = sc.string.split("ratingValue")[1].split(",")[0][2:]
                 if "releaseYear" in sc.string:
                     year = sc.string.split("releaseYear")[1].split(",")[0][2:].replace('"','')
+
+        script_w_data = soup_movie.select_one('script[type="application/ld+json"]')
+        json_obj = json.loads(script_w_data.text.split(' */')[1].split('/* ]]>')[0])
+        image_url = json_obj['image']
+        movies_rating['image_url'].append(image_url)
+        
         url_stats = DOMAIN + "/csi" + link + "stats"
         url_stats_page = requests.get(url_stats)
         soup_stats = BeautifulSoup(url_stats_page.content, 'html.parser')
@@ -187,18 +195,36 @@ def get_total_directors(df):
 def get_total_countries(df):
     return df['country'].nunique()
 
-# data
-# df_film = scrape_films('ther0')
-# df_rating, df_actor, df_director, df_genre, df_length, df_country = scrape_films_details(df_film)
-# merged_df = pd.merge(df_film, df_rating)
+def get_top_decades(df_film, df_rating):
+    df_rating_merged = pd.merge(df_film, df_rating)
 
+    df_rating_merged['year'] = df_rating_merged['year'].astype(int)
 
-# print(df_length.head(20))
-# print(get_total_films(df_length))
-# print(get_total_watched_time(df_length))
-# print(get_total_directors(df_director))
-# print(get_total_countries(df_country))
-# print(merged_df.head(10))
+    df_rating_merged['decade'] = (df_rating_merged['year'] // 10) * 10
+
+    df_decade = df_rating_merged.groupby('decade').agg({'rating': 'mean', 'id': 'count'}).reset_index()
+    df_decade = df_decade.rename(columns={'rating': 'avg_rating', 'id': 'film_count'})
+
+    top_decades = df_decade.sort_values(by='avg_rating', ascending=False).head(3)
+    
+    return top_decades, df_rating_merged
+
+def get_top_movies_for_decade(df_rating_merged, decade, top_n=20):
+    decade_movies = df_rating_merged[df_rating_merged['decade'] == decade]
+
+    decade_movies = decade_movies.sort_values(by=['rating', 'liked'], ascending=[False, False])
+
+    liked_movies = decade_movies[decade_movies['liked']]
+    not_liked_movies = decade_movies[~decade_movies['liked']]
+
+    prioritized_movies = pd.concat([liked_movies, not_liked_movies])
+
+    if len(prioritized_movies) > top_n:
+        top_movies = prioritized_movies.head(top_n)
+    else:
+        top_movies = prioritized_movies
+    
+    return top_movies
 
 
 # def export_data():
@@ -211,5 +237,3 @@ def get_total_countries(df):
     # df_length.to_csv('df_length.csv', index=False)
 
 # export_data()
-
-

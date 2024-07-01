@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-from get_films import transform_ratings, scrape_films, scrape_films_details
-from get_charts import show_years, show_avg_rating_by_year, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots
+from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades
+from get_charts import show_years, show_avg_rating_by_year, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots, display_top_decades
 from recommend_films import recommend_movies
 
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 def main():
     st.title("LETTERBOXD PROFILE ANALYZER")
@@ -17,10 +17,11 @@ def main():
     if st.button("Analyze Profile"):
         if username:
             st.write("Analyzing profile for username:", username)
-            # progress bar, or loading bar
             df_film = scrape_films(username)
             df_rating, df_actor, df_director, df_genre, df_country = scrape_films_details(df_film)
             merged_df = pd.merge(df_film, df_rating)
+
+            top_decades = get_top_decades(df_film, df_rating)
 
             df_director_merged = pd.merge(df_film, df_director)
             # df_temp_director = pd.merge(df_director_merged.groupby(['director', 'director_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
@@ -47,7 +48,6 @@ def main():
 
             # USERNAME'S all time stats
             st.header(username + "'s all-time stats")
-            # number of: films, hours, directors, countries, etc.
 
             st.header("BY YEAR")
             col1, col2 = st.columns(2)
@@ -55,6 +55,9 @@ def main():
                 show_years(df_film, df_rating)
             with col2:
                 show_avg_rating_by_year(df_film, df_rating)
+
+            st.header("HIGHEST RATED DECADES")
+            display_top_decades(df_film, df_rating, top_decades)
 
             st.header("BY DECADE")
             show_decades(df_film, df_rating)
@@ -70,10 +73,6 @@ def main():
             
             st.header("RATED LOWER THAN AVERAGE")
             show_deviation_below(df_deviation)
-            # show_scatterplots()
-
-            # st.title("Here are some recommendations")
-            # recommend_movies(merged_df, username)
             
         else:
             st.warning("Please enter a valid username")
