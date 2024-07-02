@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
 from tabulate import tabulate
-from get_films import get_top_decades, get_top_movies_for_decade
+from get_films import get_top_decades, get_top_movies_for_decade, get_rating_differences
 
 DOMAIN = "https://letterboxd.com"
 
@@ -121,7 +121,7 @@ def show_avg_rating_by_year(df_film, df_rating):
 
     st.altair_chart(chart, use_container_width=True)
 
-def display_top_decades(df_film, df_rating, top_decades):
+def show_top_decades(df_film, df_rating, top_decades):
     top_decades, df_rating_merged = get_top_decades(df_film, df_rating)
     hover_css = """
         <style>
@@ -141,8 +141,7 @@ def display_top_decades(df_film, df_rating, top_decades):
         avg_rating = row['avg_rating']
         top_movies = get_top_movies_for_decade(df_rating_merged, decade)
         
-        st.subheader(f"{int(decade)}s")
-        st.write(f"★ Average {avg_rating:.2f}")
+        st.subheader(f"{int(decade)}s: ★ Average {avg_rating:.2f}")
         
         cols = st.columns(10)
         top_movies = top_movies.head(20)
@@ -156,42 +155,50 @@ def display_top_decades(df_film, df_rating, top_decades):
                 '''
                 st.markdown(image_html, unsafe_allow_html=True)
 
-def show_decades(df_film, df_rating):
-    # Merge df_film and df_rating
-    df_rating_merged = pd.merge(df_film, df_rating)
+def show_rating_differences(higher_rated, lower_rated):
+    hover_css = """
+    <style>
+    .movie-poster {
+        border: 2px solid transparent;
+        transition: border-color 0.3s;
+    }
+    .movie-poster:hover {
+        border-color: white;
+    }
+    p {
+        text-align: center;
+    }
+    </style>
+    """
+    st.markdown(hover_css, unsafe_allow_html=True)
 
-    # Replace True/False in 'liked' column with 'Liked'/'Not Liked'
-    df_rating_merged['liked'] = df_rating_merged['liked'].map({True: 'Liked', False: 'Not Liked'})
+    st.header("Rated Higher Than Average")
+    higher_container = st.container()
+    with higher_container:
+        cols = st.columns(6)
+        for idx, (i, movie) in enumerate(higher_rated.iterrows()):
+            with cols[idx % 6]:
+                image_html = f'''
+                <a href="{DOMAIN + movie['link']}" target="_blank">
+                    <img src="{movie['image_url']}" width="110" class="movie-poster" alt="{movie['title']}">
+                </a>
+                '''
+                st.markdown(image_html, unsafe_allow_html=True)
+                st.write(f"{movie['rating']} vs {float(movie['avg_rating']):.2f}")
 
-    # Extract decade from the 'year' column and create a new 'decade' column
-    df_rating_merged['decade'] = df_rating_merged['year']
-
-    # Create a pivot table to get counts of liked and not liked movies for each decade
-    pivot_table = df_rating_merged.pivot_table(index='decade', columns='liked', values='id', aggfunc='count', fill_value=0)
-
-    # Ensure the pivot table has both 'Liked' and 'Not Liked' columns
-    if 'Liked' not in pivot_table.columns:
-        pivot_table['Liked'] = 0
-    if 'Not Liked' not in pivot_table.columns:
-        pivot_table['Not Liked'] = 0
-
-    # Reverse the order of columns to switch stacking order
-    pivot_table = pivot_table[['Liked', 'Not Liked']]  # <-- Switched the order here
-
-    # Create the stacked bar graph
-    fig, ax = plt.subplots(figsize=(10, 6))
-    pivot_table.plot(kind='bar', stacked=True, ax=ax, color=['#ff8000', '#00b020',], edgecolor='black')
-
-    # Set labels and title
-    ax.set_xlabel('Decade')
-    ax.set_ylabel('Count')
-    ax.set_title('Movies Liked and Not Liked by Decade')
-
-    # Rotate x-axis labels for better visibility
-    plt.xticks(rotation=45)
-
-    # Show the plot
-    st.pyplot(fig)
+    st.header("Rated Lower Than Average")
+    lower_container = st.container()
+    with lower_container:
+        cols = st.columns(6)
+        for idx, (i, movie) in enumerate(lower_rated.iterrows()):
+            with cols[idx % 6]:
+                image_html = f'''
+                <a href="{DOMAIN + movie['link']}" target="_blank">
+                    <img src="{movie['image_url']}" width="110" class="movie-poster" alt="{movie['title']}">
+                </a>
+                '''
+                st.markdown(image_html, unsafe_allow_html=True)
+                st.write(f"{movie['rating']} vs {float(movie['avg_rating']):.2f}")
 
 def show_directors_table(df_temp_director):
     # Display the top 10 directors in a table

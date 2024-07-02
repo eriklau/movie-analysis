@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades
-from get_charts import show_years, show_avg_rating_by_year, show_decades, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots, display_top_decades
+from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
+from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots, show_top_decades, show_rating_differences
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
@@ -46,6 +46,8 @@ def main():
             df_deviation['avg_rating'] = pd.to_numeric(df_deviation['avg_rating'])
             df_deviation['rating_difference'] = df_deviation['rating'] - df_deviation['avg_rating']
 
+            higher_rated, lower_rated = get_rating_differences(df_film, df_rating)
+
             # USERNAME'S all time stats
             st.header(username + "'s all-time stats")
 
@@ -57,10 +59,10 @@ def main():
                 show_avg_rating_by_year(df_film, df_rating)
 
             st.header("HIGHEST RATED DECADES")
-            display_top_decades(df_film, df_rating, top_decades)
+            show_top_decades(df_film, df_rating, top_decades)
 
-            st.header("BY DECADE")
-            show_decades(df_film, df_rating)
+            # Rating differences
+            show_rating_differences(higher_rated, lower_rated)
 
             st.header("BY ACTOR")
             show_actors(df_actor_merged, df_temp_actor)

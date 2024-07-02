@@ -226,6 +226,19 @@ def get_top_movies_for_decade(df_rating_merged, decade, top_n=20):
     
     return top_movies
 
+def get_rating_differences(df_film, df_rating):
+    df_rating_merged = pd.merge(df_film, df_rating, on='id')
+    print(df_rating_merged['rating'].dtypes)
+    print(df_rating_merged['avg_rating'].dtypes)
+    df_rating_merged['rating_diff'] = df_rating_merged['rating'] - df_rating_merged['avg_rating'].astype(float)
+    
+    higher_rated = df_rating_merged[df_rating_merged['rating_diff'] > 0]
+    lower_rated = df_rating_merged[df_rating_merged['rating_diff'] < 0]
+    
+    higher_rated = higher_rated.sort_values(by='rating_diff', ascending=False).head(12)
+    lower_rated = lower_rated.sort_values(by='rating_diff').head(12)
+    
+    return higher_rated, lower_rated
 
 # def export_data():
     # df_film.to_csv('df_film.csv', index=False)
