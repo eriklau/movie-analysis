@@ -172,7 +172,7 @@ def show_rating_differences(higher_rated, lower_rated):
     """
     st.markdown(hover_css, unsafe_allow_html=True)
 
-    st.header("Rated Higher Than Average")
+    st.subheader("RATED HIGHER THAN AVERAGE")
     higher_container = st.container()
     with higher_container:
         cols = st.columns(6)
@@ -186,7 +186,7 @@ def show_rating_differences(higher_rated, lower_rated):
                 st.markdown(image_html, unsafe_allow_html=True)
                 st.write(f"{movie['rating']} vs {float(movie['avg_rating']):.2f}")
 
-    st.header("Rated Lower Than Average")
+    st.subheader("RATED LOWER THAN AVERAGE")
     lower_container = st.container()
     with lower_container:
         cols = st.columns(6)
@@ -289,66 +289,3 @@ def show_actors(df_actor_merged, df_temp_actor):
 
     # Display the plot
     st.pyplot(fig)
-
-def show_deviation_below(df_deviation):
-    # Sort the DataFrame by "rating_difference" in ascending order
-    lowest_deviation_movies = df_deviation.sort_values('rating_difference', ascending=True)
-
-    # Select the 10 lowest rows
-    top_lowest_deviation = lowest_deviation_movies.head(10)
-
-    # Create a bar graph using Matplotlib
-    plt.figure(figsize=(10, 6))
-    plt.barh(top_lowest_deviation['title'], top_lowest_deviation['rating_difference'], color='#00b020')
-    plt.xlabel('Rating Difference')
-    plt.ylabel('Movie Title')
-    plt.title('Top 10 Movies with Lowest Rating Deviation')
-    plt.gca().invert_yaxis()  # Invert y-axis to have the movie with the lowest deviation at the top
-    st.pyplot(plt)
-
-
-
-def show_deviation_above(df_deviation):
-    # Sort the DataFrame by "rating_difference" in descending order
-    highest_deviation_movies = df_deviation.sort_values('rating_difference', ascending=False)
-
-    # Select the 10 highest rows
-    top_highest_deviation = highest_deviation_movies.head(10)
-
-    # Create a bar graph using Matplotlib
-    plt.figure(figsize=(10, 6))
-    plt.barh(top_highest_deviation['title'], top_highest_deviation['rating_difference'], color='orange')
-    plt.xlabel('Rating Difference')
-    plt.ylabel('Movie Title')
-    plt.title('Top 10 Movies with Highest Rating Deviation')
-    plt.gca().invert_yaxis()  # Invert y-axis to have the movie with the highest deviation at the top
-    st.pyplot(plt)
-
-
-def show_scatterplots(df_merged):
-    # Number of Likes vs Number of Watches
-    plt.figure(figsize=(10, 6))
-    plt.scatter(df_merged['liked_by'], df_merged['watched_by'], alpha=0.5)
-    plt.xlabel('Number of Likes')
-    plt.ylabel('Number of Watches')
-    plt.title('Scatterplot: Number of Likes vs Number of Watches')
-    plt.grid(True)
-    plt.show()
-
-    # Release Year vs Number of Likes
-    plt.figure(figsize=(10, 6))
-    plt.scatter(df_merged['year'], df_merged['liked_by'], alpha=0.5)
-    plt.xlabel('Release Year')
-    plt.ylabel('Number of Likes')
-    plt.title('Scatterplot: Release Year vs Number of Likes')
-    plt.grid(True)
-    plt.show()
-
-    # Release Year vs Average User Rating
-    plt.figure(figsize=(10, 6))
-    plt.scatter(df_merged['year'], df_merged['avg_rating'], alpha=0.5)
-    plt.xlabel('Release Year')
-    plt.ylabel('Average User Rating')
-    plt.title('Scatterplot: Release Year vs Average User Rating')
-    plt.grid(True)
-    plt.show()

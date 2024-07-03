@@ -62,37 +62,3 @@ def recommend_movies(df_merged_input_user, username):
     user_unrated_movies = user_unrated_movies.sort_values(by='predicted_rating', ascending=False)
 
     print(user_unrated_movies.head(10))
-
-    # Display the movie recommendations
-    # st.write(user_unrated_movies[['movie_title', 'predicted_rating', "letterboxd_link"]].head(50))
-
-    # Export the top 50 predicted movies to a CSV file
-    # top_predicted_movies = user_unrated_movies[['movie_title', 'predicted_rating']].head(50)
-    # top_predicted_movies.to_csv('top_predicted_movies.csv', index=False)
-
-# recommend_movies(df_merged_input_user, 'MeatyRicky')
-
-# USERNAME'S all time stats
-# number of: films, hours, directors, countries, shown in a single row with biggish title
-# TOP FILMS?? -
-# watched movies graph by release year +
-# average rating by release year
-# 3 highest rated decades, with the average score as subtitle, top 10 respective films in each decade shown as a picture link
-# 3 charts in single row, most watched in: GENRES, COUNTRIES, LANGUAGES
-# 3 charts in single row, highest rated in: GENRES, COUNTRIES, LANGUAGES, on average
-# THEMES AND NONGENRES: MOST WATCHED AND HIGHEST RATED
-# LIST PROGRESS WITH CIRCLE PROGRESSION CHARTS -
-# COLLECTIONS (MAYBE) -
-# top 10 most watched movies with picture link, with how many times watched below
-# top movies with deviation above and below with picture link and their rating vs avg rating?
-# TOP ACTORS with picture profile link, then maybe with liked/not liked chart
-# TOP DIRECTORS etc...
-# CREWS AND STUDIOS -
-#
-
-# most watched by decade
-# top movies with deviation above and below with picture link and their rating vs avg rating?
-
-
-
-

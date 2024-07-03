@@ -179,21 +179,8 @@ def scrape_films_details(df_film):
     df_actor = pd.DataFrame(movies_actor)
     df_director = pd.DataFrame(movies_director)
     df_genre = pd.DataFrame(movies_genre)
-    # df_length = pd.DataFrame(movies_length)
     df_country = pd.DataFrame(movies_country)
     return df_rating, df_actor, df_director, df_genre, df_country
-
-def get_total_films(df):
-    return df['film_length'].count()
-# in hours
-def get_total_watched_time(df):
-    return round(df['film_length'].sum() / 60) # convert to hours rounded
-
-def get_total_directors(df):
-    return df['director'].nunique()
-
-def get_total_countries(df):
-    return df['country'].nunique()
 
 def get_top_decades(df_film, df_rating):
     df_rating_merged = pd.merge(df_film, df_rating)

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
-from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_deviation_above, show_deviation_below, show_directors, show_directors_table, show_scatterplots, show_top_decades, show_rating_differences
+from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_directors, show_directors_table, show_top_decades, show_rating_differences
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
@@ -16,7 +16,7 @@ def main():
 
     if st.button("Analyze Profile"):
         if username:
-            st.write("Analyzing profile for username:", username)
+            st.subheader("Analyzing profile for " + username + "...") 
             df_film = scrape_films(username)
             df_rating, df_actor, df_director, df_genre, df_country = scrape_films_details(df_film)
             merged_df = pd.merge(df_film, df_rating)
@@ -49,32 +49,45 @@ def main():
             higher_rated, lower_rated = get_rating_differences(df_film, df_rating)
 
             # USERNAME'S all time stats
-            st.header(username + "'s all-time stats")
+            st.title(username + "'s all-time stats")
+            cols = st.columns(4)
+            with cols[0]:
+                st.write(str(len(df_film.index)) + " FILMS")
+            with cols[1]:
+                st.write(str(int(df_rating['runtime'].sum()/60)) + " HOURS")
+            with cols[2]:
+                st.write(str(df_director['director'].nunique()) + " DIRECTORS")
+            with cols[3]:
+                st.write(str(df_country['country'].nunique()) + " COUNTRIES")
 
-            st.header("BY YEAR")
-            col1, col2 = st.columns(2)
-            with col1:
+            st.markdown("""---""")
+
+            st.subheader("BY YEAR")
+            tabs = st.tabs(["Films", "Ratings"])
+            with tabs[0]:
                 show_years(df_film, df_rating)
-            with col2:
+            with tabs[1]:
                 show_avg_rating_by_year(df_film, df_rating)
 
-            st.header("HIGHEST RATED DECADES")
+            st.markdown("""---""")
+
+            st.subheader("HIGHEST RATED DECADES")
             show_top_decades(df_film, df_rating, top_decades)
+
+            st.markdown("""---""")
 
             # Rating differences
             show_rating_differences(higher_rated, lower_rated)
 
-            st.header("BY ACTOR")
+            st.markdown("""---""")
+
+            st.subheader("BY ACTOR")
             show_actors(df_actor_merged, df_temp_actor)
 
-            st.header("BY DIRECTOR")
-            show_directors(df_director_merged, df_temp_director)
+            st.markdown("""---""")
 
-            st.header("RATED HIGHER THAN AVERAGE")
-            show_deviation_above(df_deviation)
-            
-            st.header("RATED LOWER THAN AVERAGE")
-            show_deviation_below(df_deviation)
+            st.subheader("BY DIRECTOR")
+            show_directors(df_director_merged, df_temp_director)
             
         else:
             st.warning("Please enter a valid username")
