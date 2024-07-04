@@ -164,14 +164,14 @@ def scrape_films_details(df_film):
                 movies_genre['genre'].append(genre.get_text().strip())
 
         # finding the countries
-        if (soup_movie.find('div', {'class': 'text-sluglist'}) is not None):
-            country_div = soup_movie.find('div', {'class': 'text-sluglist'})
-            country_tags = country_div.find_all('a', {'class': 'text-slug'})
-
-            for country_tag in country_tags:
-                country_name = country_tag.get_text().strip()
-                movies_country['id'].append(id_movie)
-                movies_country['country'].append(country_name)
+        details_div = soup_movie.find('div', {'id': 'tab-details'})
+        if details_div is not None:
+            all_divs = details_div.find_all('div')
+            if len(all_divs) > 1:
+                second_div = all_divs[1]
+                for country in second_div.find_all('a'):
+                    movies_country['id'].append(id_movie)
+                    movies_country['country'].append(country.get_text().strip())
 
         bar.progress(progress/len(df_film))
 
