@@ -185,6 +185,8 @@ def show_rating_differences(higher_rated, lower_rated):
                 '''
                 st.markdown(image_html, unsafe_allow_html=True)
                 st.write(f"{movie['rating']} vs {float(movie['avg_rating']):.2f}")
+    
+    st.markdown("""---""")
 
     st.subheader("RATED LOWER THAN AVERAGE")
     lower_container = st.container()
@@ -199,6 +201,88 @@ def show_rating_differences(higher_rated, lower_rated):
                 '''
                 st.markdown(image_html, unsafe_allow_html=True)
                 st.write(f"{movie['rating']} vs {float(movie['avg_rating']):.2f}")
+
+def show_most_watched_actors(df_actor_merged, df_temp_actor):
+    filtered_actors = df_actor_merged[df_actor_merged['actor'].isin(df_temp_actor['actor'])]
+    top_actors = filtered_actors.groupby(['actor']).size().sort_values(ascending=False).head(10).reset_index(name='count')
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_actors).mark_bar().encode(
+        y=alt.Y('actor:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Actor')),
+        x=alt.X('count:Q', axis=alt.Axis(title='Count')),
+        color=alt.value('#00b0f0'),
+        tooltip=[alt.Tooltip('actor:O', title='Actor'), alt.Tooltip('count:Q', title='Count')]
+    )
+
+    hover = alt.Chart(top_actors).mark_bar(color='lightblue').encode(
+        y=alt.Y('actor:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Actor')),
+        x=alt.X('count:Q', axis=alt.Axis(title='Count')),
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title='MOST WATCHED ACTORS',
+        width=800,
+        height=400
+    )
+
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+
+def show_highest_rated_actors(df_actor_merged, df_temp_actor):
+    filtered_actors = df_actor_merged[df_actor_merged['actor'].isin(df_temp_actor['actor'])]
+    top_actors = filtered_actors.groupby(['actor']).agg({'rating': 'mean'}).sort_values(by='rating', ascending=False).head(10).reset_index()
+    
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_actors).mark_bar().encode(
+        y=alt.Y('actor:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Actor')),
+        x=alt.X('rating:Q', axis=alt.Axis(title='Average Rating')),
+        color=alt.value('#ff8000'),
+        tooltip=[alt.Tooltip('actor:O', title='Actor'), alt.Tooltip('rating:Q', title='Average Rating')]
+    )
+
+    hover = alt.Chart(top_actors).mark_bar(color='lightblue').encode(
+        y=alt.Y('actor:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Actor')),
+        x=alt.X('rating:Q', axis=alt.Axis(title='Average Rating')),
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title='HIGHEST RATED ACTORS',
+        width=800,
+        height=400
+    )
+
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
 
 def show_directors_table(df_temp_director):
     # Display the top 10 directors in a table

@@ -4,15 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
-from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_directors, show_directors_table, show_top_decades, show_rating_differences
+from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_directors, show_directors_table, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
 
 def main():
-    st.title("LETTERBOXD PROFILE ANALYZER")
+    st.title("LETTERBOXD MOVIE STATS")
 
-    username = st.text_input("Letterboxd Username", placeholder="Ex. Ther0")
+    username = st.text_input("LETTERBOXD USERNAME", placeholder="Ex. Attributions")
 
     if st.button("Analyze Profile"):
         if username:
@@ -48,25 +48,32 @@ def main():
 
             higher_rated, lower_rated = get_rating_differences(df_film, df_rating)
 
+            st.markdown("""
+            <style>
+                h1 {
+                    text-align: center;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             # USERNAME'S all time stats
             st.title(username + "'s all-time stats")
-            cols = st.columns(4)
+            st.markdown("""---""")
+            cols = st.columns(2)
             with cols[0]:
-                st.write(str(len(df_film.index)) + " FILMS")
+                st.title(str(len(df_film.index)) + " FILMS")
+                st.title(str(df_director['director'].nunique()) + " DIRECTORS")
             with cols[1]:
-                st.write(str(int(df_rating['runtime'].sum()/60)) + " HOURS")
-            with cols[2]:
-                st.write(str(df_director['director'].nunique()) + " DIRECTORS")
-            with cols[3]:
-                st.write(str(df_country['country'].nunique()) + " COUNTRIES")
+                st.title(str(int(df_rating['runtime'].sum()/60)) + " HOURS")
+                st.title(str(df_country['country'].nunique()) + " COUNTRIES")
 
             st.markdown("""---""")
 
             st.subheader("BY YEAR")
-            tabs = st.tabs(["Films", "Ratings"])
-            with tabs[0]:
+            year_tabs = st.tabs(["FILMS", "RATINGS"])
+            with year_tabs[0]:
                 show_years(df_film, df_rating)
-            with tabs[1]:
+            with year_tabs[1]:
                 show_avg_rating_by_year(df_film, df_rating)
 
             st.markdown("""---""")
@@ -81,8 +88,12 @@ def main():
 
             st.markdown("""---""")
 
-            st.subheader("BY ACTOR")
-            show_actors(df_actor_merged, df_temp_actor)
+            st.subheader("TOP STARS")
+            stars_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
+            with stars_tabs[0]:
+                show_most_watched_actors(df_actor_merged, df_temp_actor)
+            with stars_tabs[1]:
+                show_highest_rated_actors(df_actor_merged, df_temp_actor)
 
             st.markdown("""---""")
 
