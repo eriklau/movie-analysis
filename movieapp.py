@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
-from get_charts import show_years, show_avg_rating_by_year, show_actors, show_actors_table, show_directors, show_directors_table, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors
+from get_charts import show_years, show_avg_rating_by_year, show_directors, show_directors_table, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
@@ -98,7 +98,11 @@ def main():
             st.markdown("""---""")
 
             st.subheader("BY DIRECTOR")
-            show_directors(df_director_merged, df_temp_director)
+            directors_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
+            with directors_tabs[0]:
+                show_most_watched_directors(df_director_merged, df_temp_director)
+            with directors_tabs[1]:
+                show_highest_rated_directors(df_director_merged, df_temp_director)
             
         else:
             st.warning("Please enter a valid username")

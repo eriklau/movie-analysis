@@ -283,14 +283,91 @@ def show_highest_rated_actors(df_actor_merged, df_temp_actor):
 
     st.altair_chart(chart, use_container_width=True)
 
+def show_most_watched_directors(df_director_merged, df_temp_director):
+    filtered_directors = df_director_merged[df_director_merged['director'].isin(df_temp_director['director'])]
+    top_directors = filtered_directors.groupby(['director']).size().sort_values(ascending=False).head(10).reset_index(name='count')
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_directors).mark_bar().encode(
+        y=alt.Y('director:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Director')),
+        x=alt.X('count:Q', axis=alt.Axis(title='Count')),
+        color=alt.value('#00b0f0'),
+        tooltip=[alt.Tooltip('director:O', title='Director'), alt.Tooltip('count:Q', title='Count')]
+    )
+
+    hover = alt.Chart(top_directors).mark_bar(color='lightblue').encode(
+        y=alt.Y('director:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Director')),
+        x=alt.X('count:Q', axis=alt.Axis(title='Count')),
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title='MOST WATCHED DIRECTORS',
+        width=800,
+        height=400
+    )
+
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+
+def show_highest_rated_directors(df_director_merged, df_temp_director):
+    filtered_directors = df_director_merged[df_director_merged['director'].isin(df_temp_director['director'])]
+    top_directors = filtered_directors.groupby(['director']).agg({'rating': 'mean'}).sort_values(by='rating', ascending=False).head(10).reset_index()
+    
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_directors).mark_bar().encode(
+        y=alt.Y('director:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Director')),
+        x=alt.X('rating:Q', axis=alt.Axis(title='Average Rating')),
+        color=alt.value('#ff8000'),
+        tooltip=[alt.Tooltip('director:O', title='Director'), alt.Tooltip('rating:Q', title='Average Rating')]
+    )
+
+    hover = alt.Chart(top_directors).mark_bar(color='lightblue').encode(
+        y=alt.Y('director:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Director')),
+        x=alt.X('rating:Q', axis=alt.Axis(title='Average Rating')),
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title='HIGHEST RATED DIRECTORS',
+        width=800,
+        height=400
+    )
+
+    chart = chart.configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
 
 def show_directors_table(df_temp_director):
     # Display the top 10 directors in a table
     tabulate(df_temp_director.sort_values('count', ascending=False).head(10), headers='keys', tablefmt='pretty', showindex=False)
-
-def show_actors_table(df_temp_actor):
-    # Display the top 10 actors in a table
-    tabulate(df_temp_actor.sort_values('count', ascending=False).head(10), headers='keys', tablefmt='pretty', showindex=False)
 
 def show_directors(df_director_merged, df_temp_director):
     # Filter the DataFrame to include only directors present in df_temp_director
@@ -325,47 +402,6 @@ def show_directors(df_director_merged, df_temp_director):
     plt.yticks(bar_positions, top_directors.index)
 
     # Invert y-axis to show the director with the highest count at the top
-    plt.gca().invert_yaxis()
-
-    # Add legend
-    plt.legend()
-
-    # Display the plot
-    st.pyplot(fig)
-
-def show_actors(df_actor_merged, df_temp_actor):
-    # Filter the DataFrame to include only actors present in df_temp_actor
-    filtered_actors = df_actor_merged[df_actor_merged['actor'].isin(df_temp_actor['actor'])]
-
-    # Calculate the count of liked and not liked movies per actor
-    actor_likes = filtered_actors.groupby('actor')['liked'].sum()
-    actor_dislikes = filtered_actors.groupby('actor')['liked'].count() - actor_likes
-
-    # Get the top 10 most watched actors
-    top_actors = actor_likes.add(actor_dislikes).sort_values(ascending=False).head(10)
-
-    # Create the horizontal stacked bar plot using Matplotlib
-    fig, ax = plt.subplots(figsize=(10, 6))
-    bar_positions = np.arange(len(top_actors))
-    bar_width = 0.6
-
-    colors = ['#ff8000', '#00b020']
-
-    bottom = np.zeros(len(top_actors))
-
-    for color, label in zip(colors, ['Liked', 'Not Liked']):
-        values = [actor_likes.get(actor, 0) if label == 'Liked' else actor_dislikes.get(actor, 0) for actor in top_actors.index]
-        ax.barh(bar_positions, values,
-                color=color, edgecolor='black', height=bar_width, label=label, left=bottom)
-        bottom += values
-
-    # Set the axis labels and title
-    plt.xlabel('Number of Movies')
-    plt.ylabel('Actor')
-    plt.title('Top 10 Most Watched Actors and Liked/Not Liked Movies')
-    plt.yticks(bar_positions, top_actors.index)
-
-    # Invert y-axis to show the actor with the highest count at the top
     plt.gca().invert_yaxis()
 
     # Add legend
