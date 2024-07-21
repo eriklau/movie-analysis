@@ -101,6 +101,10 @@ def scrape_films_details(df_film):
     movies_country['id'] = []
     movies_country['country'] = []
 
+    movies_language = {}
+    movies_language['id'] = []
+    movies_language['language'] = []
+
     progress = 0
     bar = st.progress(progress)
 
@@ -173,6 +177,16 @@ def scrape_films_details(df_film):
                     movies_country['id'].append(id_movie)
                     movies_country['country'].append(country.get_text().strip())
 
+        # finding the languages
+        details_div = soup_movie.find('div', {'id': 'tab-details'})
+        if details_div is not None:
+            all_divs = details_div.find_all('div')
+            if len(all_divs) > 1:
+                third_div = all_divs[2]
+                for language in third_div.find_all('a'):
+                    movies_language['id'].append(id_movie)
+                    movies_language['language'].append(language.get_text().strip())
+
         bar.progress(progress/len(df_film))
 
     df_rating = pd.DataFrame(movies_rating)
@@ -180,7 +194,8 @@ def scrape_films_details(df_film):
     df_director = pd.DataFrame(movies_director)
     df_genre = pd.DataFrame(movies_genre)
     df_country = pd.DataFrame(movies_country)
-    return df_rating, df_actor, df_director, df_genre, df_country
+    df_language = pd.DataFrame(movies_language)
+    return df_rating, df_actor, df_director, df_genre, df_country, df_language
 
 def get_top_decades(df_film, df_rating):
     df_rating_merged = pd.merge(df_film, df_rating)

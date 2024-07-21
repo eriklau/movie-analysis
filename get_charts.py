@@ -155,6 +155,148 @@ def show_top_decades(df_film, df_rating, top_decades):
                 '''
                 st.markdown(image_html, unsafe_allow_html=True)
 
+def show_genres_chart(df, title, color, hover_color, avg_rating=False):
+    if avg_rating:
+        top_genres = df.groupby('genre')['rating'].mean().sort_values(ascending=False).head(10).reset_index()
+        top_genres.columns = ['genre', 'avg_rating']
+        y_axis = alt.Y('genre:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Genre'))
+        x_axis = alt.X('avg_rating:Q', axis=alt.Axis(title='Average Rating'))
+        tooltip = [alt.Tooltip('genre:O', title='Genre'), alt.Tooltip('avg_rating:Q', title='Average Rating')]
+    else:
+        top_genres = df['genre'].value_counts().head(10).reset_index()
+        top_genres.columns = ['genre', 'count']
+        y_axis = alt.Y('genre:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Genre'))
+        x_axis = alt.X('count:Q', axis=alt.Axis(title='Count'))
+        tooltip = [alt.Tooltip('genre:O', title='Genre'), alt.Tooltip('count:Q', title='Count')]
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_genres).mark_bar(color=color).encode(
+        y=y_axis,
+        x=x_axis,
+        tooltip=tooltip
+    )
+
+    hover = alt.Chart(top_genres).mark_bar(color=hover_color).encode(
+        y=y_axis,
+        x=x_axis,
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title=title,
+        width=250,
+        height=400
+    ).configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+def show_countries_chart(df, title, color, hover_color, avg_rating=False):
+    if avg_rating:
+        top_countries = df.groupby('country')['rating'].mean().sort_values(ascending=False).head(10).reset_index()
+        top_countries.columns = ['country', 'avg_rating']
+        y_axis = alt.Y('country:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Country'))
+        x_axis = alt.X('avg_rating:Q', axis=alt.Axis(title='Average Rating'))
+        tooltip = [alt.Tooltip('country:O', title='Country'), alt.Tooltip('avg_rating:Q', title='Average Rating')]
+    else:
+        top_countries = df['country'].value_counts().head(10).reset_index()
+        top_countries.columns = ['country', 'count']
+        y_axis = alt.Y('country:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Country'))
+        x_axis = alt.X('count:Q', axis=alt.Axis(title='Count'))
+        tooltip = [alt.Tooltip('country:O', title='Country'), alt.Tooltip('count:Q', title='Count')]
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_countries).mark_bar(color=color).encode(
+        y=y_axis,
+        x=x_axis,
+        tooltip=tooltip
+    )
+
+    hover = alt.Chart(top_countries).mark_bar(color=hover_color).encode(
+        y=y_axis,
+        x=x_axis,
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title=title,
+        width=250,
+        height=400
+    ).configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+def show_languages_chart(df, title, color, hover_color, avg_rating=False):
+    if avg_rating:
+        top_languages = df.groupby('language')['rating'].mean().sort_values(ascending=False).head(10).reset_index()
+        top_languages.columns = ['language', 'avg_rating']
+        y_axis = alt.Y('language:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Language'))
+        x_axis = alt.X('avg_rating:Q', axis=alt.Axis(title='Average Rating'))
+        tooltip = [alt.Tooltip('language:O', title='Language'), alt.Tooltip('avg_rating:Q', title='Average Rating')]
+    else:
+        top_languages = df['language'].value_counts().head(10).reset_index()
+        top_languages.columns = ['language', 'count']
+        y_axis = alt.Y('language:O', sort='-x', axis=alt.Axis(labelAngle=0, title='Language'))
+        x_axis = alt.X('count:Q', axis=alt.Axis(title='Count'))
+        tooltip = [alt.Tooltip('language:O', title='Language'), alt.Tooltip('count:Q', title='Count')]
+
+    highlight = alt.selection(type='single', on='mouseover', nearest=True)
+
+    bars = alt.Chart(top_languages).mark_bar(color=color).encode(
+        y=y_axis,
+        x=x_axis,
+        tooltip=tooltip
+    )
+
+    hover = alt.Chart(top_languages).mark_bar(color=hover_color).encode(
+        y=y_axis,
+        x=x_axis,
+        opacity=alt.condition(highlight, alt.value(1), alt.value(0))
+    ).add_selection(
+        highlight
+    )
+
+    chart = alt.layer(
+        bars, hover
+    ).properties(
+        title=title,
+        width=250,
+        height=400
+    ).configure_axis(
+        labelFontSize=12,
+        titleFontSize=14,
+        labelColor='#ffffff',
+        titleColor='#ffffff'
+    ).configure_view(
+        strokeOpacity=0
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+
 def show_rating_differences(higher_rated, lower_rated):
     hover_css = """
     <style>
@@ -226,7 +368,7 @@ def show_most_watched_actors(df_actor_merged, df_temp_actor):
     chart = alt.layer(
         bars, hover
     ).properties(
-        title='MOST WATCHED ACTORS',
+        title='',
         width=800,
         height=400
     )
@@ -267,7 +409,7 @@ def show_highest_rated_actors(df_actor_merged, df_temp_actor):
     chart = alt.layer(
         bars, hover
     ).properties(
-        title='HIGHEST RATED ACTORS',
+        title='',
         width=800,
         height=400
     )
@@ -363,49 +505,3 @@ def show_highest_rated_directors(df_director_merged, df_temp_director):
     )
 
     st.altair_chart(chart, use_container_width=True)
-
-
-def show_directors_table(df_temp_director):
-    # Display the top 10 directors in a table
-    tabulate(df_temp_director.sort_values('count', ascending=False).head(10), headers='keys', tablefmt='pretty', showindex=False)
-
-def show_directors(df_director_merged, df_temp_director):
-    # Filter the DataFrame to include only directors present in df_temp_director
-    filtered_directors = df_director_merged[df_director_merged['director'].isin(df_temp_director['director'])]
-
-    # Calculate the count of liked and not liked movies per director
-    director_likes = filtered_directors.groupby('director')['liked'].sum()
-    director_dislikes = filtered_directors.groupby('director')['liked'].count() - director_likes
-
-    # Get the top 10 most watched directors
-    top_directors = director_likes.add(director_dislikes).sort_values(ascending=False).head(10)
-
-    # Create the horizontal stacked bar plot using Matplotlib
-    fig, ax = plt.subplots(figsize=(10, 6))
-    bar_positions = np.arange(len(top_directors))
-    bar_width = 0.6
-
-    colors = ['#ff8000', '#00b020']
-
-    bottom = np.zeros(len(top_directors))
-
-    for color, label in zip(colors, ['Liked', 'Not Liked']):
-        values = [director_likes.get(director, 0) if label == 'Liked' else director_dislikes.get(director, 0) for director in top_directors.index]
-        ax.barh(bar_positions, values,
-                color=color, edgecolor='black', height=bar_width, label=label, left=bottom)
-        bottom += values
-
-    # Set the axis labels and title
-    plt.xlabel('Number of Movies')
-    plt.ylabel('Director')
-    plt.title('Top 10 Most Watched Directors and Liked/Not Liked Movies')
-    plt.yticks(bar_positions, top_directors.index)
-
-    # Invert y-axis to show the director with the highest count at the top
-    plt.gca().invert_yaxis()
-
-    # Add legend
-    plt.legend()
-
-    # Display the plot
-    st.pyplot(fig)

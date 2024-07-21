@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
-from get_charts import show_years, show_avg_rating_by_year, show_directors, show_directors_table, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors
+from get_charts import show_years, show_avg_rating_by_year, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors, show_genres_chart, show_countries_chart, show_languages_chart
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
@@ -18,7 +18,7 @@ def main():
         if username:
             st.subheader("Analyzing profile for " + username + "...") 
             df_film = scrape_films(username)
-            df_rating, df_actor, df_director, df_genre, df_country = scrape_films_details(df_film)
+            df_rating, df_actor, df_director, df_genre, df_country, df_language = scrape_films_details(df_film)
             merged_df = pd.merge(df_film, df_rating)
 
             top_decades = get_top_decades(df_film, df_rating)
@@ -36,6 +36,10 @@ def main():
             #                         df_actor['actor'].value_counts().reset_index().rename(columns = {'index':'actor', 'actor':'count'}))
             df_temp_actor = pd.merge(df_actor_merged.groupby(['actor', 'actor_link']).agg({'liked':'sum', 'rating':'mean'}).reset_index(),
                                     df_actor['actor'].value_counts().reset_index())
+            
+            df_genre_merged = pd.merge(df_film, df_genre)
+            df_country_merged = pd.merge(df_film, df_country)
+            df_language_merged = pd.merge(df_film, df_language)
 
             df_temp_director = df_temp_director.sort_values('count', ascending=False).reset_index(drop=True)
             n_director = df_temp_director.iloc[9]['count']
@@ -87,6 +91,28 @@ def main():
             show_rating_differences(higher_rated, lower_rated)
 
             st.markdown("""---""")
+            st.subheader("GENRES, COUNTRIES & LANGUAGES")
+            genre_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
+
+            with genre_tabs[0]:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    show_genres_chart(df_genre, "", "green", "lightgreen")
+                with col2:
+                    show_countries_chart(df_country, "", "#00b0f0", "lightblue")
+                with col3:
+                    show_languages_chart(df_language, "", "#ff8000", "#ffd700")
+
+            with genre_tabs[1]:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    show_genres_chart(df_genre_merged, "", "lightgreen", "green", avg_rating=True)
+                with col2:
+                    show_countries_chart(df_country_merged, "", "lightblue", "#00b0f0", avg_rating=True)
+                with col3:
+                    show_languages_chart(df_language_merged, "", "#ffd700", "#ff8000", avg_rating=True)
+
+            st.markdown("""---""")
 
             st.subheader("TOP STARS")
             stars_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
@@ -97,7 +123,7 @@ def main():
 
             st.markdown("""---""")
 
-            st.subheader("BY DIRECTOR")
+            st.subheader("TOP DIRECTORS")
             directors_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
             with directors_tabs[0]:
                 show_most_watched_directors(df_director_merged, df_temp_director)
