@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from get_films import transform_ratings, scrape_films, scrape_films_details, get_top_decades, get_rating_differences
-from get_charts import show_years, show_avg_rating_by_year, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors, show_genres_chart, show_countries_chart, show_languages_chart
+from get_charts import show_top_20_films, show_years, show_avg_rating_by_year, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors, show_genres_chart, show_countries_chart, show_languages_chart
 from recommend_films import recommend_movies
 
 # st.set_page_config(layout="wide")
@@ -70,6 +70,11 @@ def main():
             with cols[1]:
                 st.title(str(int(df_rating['runtime'].sum()/60)) + " HOURS")
                 st.title(str(df_country['country'].nunique()) + " COUNTRIES")
+
+            st.markdown("""---""")
+
+            st.subheader("TOP FILMS")
+            show_top_20_films(merged_df)
 
             st.markdown("""---""")
 

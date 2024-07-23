@@ -8,6 +8,31 @@ from get_films import get_top_decades, get_top_movies_for_decade, get_rating_dif
 
 DOMAIN = "https://letterboxd.com"
 
+def show_top_20_films(df_film):
+    top_20_films = df_film.sort_values(by='rating', ascending=False).head(20)
+    hover_css = """
+        <style>
+            .movie-poster {
+                border: 2px solid transparent;
+                transition: border-color 0.3s;
+            }
+            .movie-poster:hover {
+                border-color: white;
+            }
+        </style>
+    """
+    st.markdown(hover_css, unsafe_allow_html=True)
+
+    cols = st.columns(10)
+    for idx, (i, movie) in enumerate(top_20_films.iterrows()):
+        with cols[idx % 10]:
+            image_html = f'''
+            <a href="{DOMAIN + movie['link']}" target="_blank">
+                <img src="{movie['image_url']}" width="70" class="movie-poster" alt="{movie['title']}">
+            </a>
+            '''
+            st.markdown(image_html, unsafe_allow_html=True)
+
 def show_years(df_film, df_rating):
     df_rating_merged = pd.merge(df_film, df_rating)
     df_rating_merged['year'] = df_rating_merged['year'].astype(int)
