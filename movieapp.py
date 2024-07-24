@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 from get_films import scrape_films, scrape_films_details, get_top_decades, get_rating_differences
 from get_charts import show_top_20_films, show_years, show_avg_rating_by_year, show_top_decades, show_rating_differences, show_most_watched_actors, show_highest_rated_actors, show_most_watched_directors, show_highest_rated_directors, show_genres_chart, show_countries_chart, show_languages_chart
 from recommend_films import recommend_movies
