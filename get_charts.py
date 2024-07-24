@@ -1,9 +1,6 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
-from tabulate import tabulate
 from get_films import get_top_decades, get_top_movies_for_decade, get_rating_differences
 
 DOMAIN = "https://letterboxd.com"
