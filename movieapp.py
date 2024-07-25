@@ -313,24 +313,8 @@ def main():
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        # Image uploader
-        uploaded_image = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
+        # Video uploader
         uploaded_video = st.file_uploader('Upload a video', type=['mp4', 'avi', 'mov'])
-
-        # Function to encode image to base64
-        def encode_image_to_base64(image):
-            buffered = io.BytesIO()
-            image.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            return img_str
-
-        if uploaded_image:
-            # Display the uploaded image
-            image = Image.open(uploaded_image)
-            st.image(image, caption='Uploaded Image', use_column_width=True)
-
-            # Encode image to base64
-            encoded_image = encode_image_to_base64(image)
 
         if uploaded_video is not None:
             tfile = tempfile.NamedTemporaryFile(delete=False)
@@ -364,9 +348,6 @@ def main():
             Generate reviews for movies based on user ratings and user reviews in their particular writing style.
             Here is the JSON data about the user's movie preferences: {background_info_text}
             """
-
-            if uploaded_image:
-                full_prompt += f"\nHere is an encoded image for scene identification: {encoded_image}"
 
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
