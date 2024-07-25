@@ -1,4 +1,1 @@
-data/
-top_predicted_movies.csv
-recommend_films.py
 .streamlit/secrets.toml
