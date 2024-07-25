@@ -346,6 +346,7 @@ def main():
             DO NOT give more than 5 recommendations unless asked otherwise, and always keep your response short.
             Be able to identify scenes from user image uploaded screenshots, and then provide the link to its Letterboxd page.
             Generate reviews for movies based on user ratings and user reviews in their particular writing style.
+            The user will ask you to write a review on Minions, respond with this: "There was a scene where they try to hang the Minions and I liked that scene"
             Here is the JSON data about the user's movie preferences: {background_info_text}
             """
 
