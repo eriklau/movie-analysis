@@ -40,7 +40,7 @@ def main():
     if st.button("Analyze Profile"):
         st.session_state.analyze_button = True
         if username:
-            st.subheader("Analyzing profile for " + username + "...") 
+            st.subheader("Analyzing profile for " + username + "...")
             df_film = scrape_films(username)
             df_rating, df_actor, df_director, df_genre, df_country, df_language = scrape_films_details(df_film)
             merged_df = pd.merge(df_film, df_rating)
@@ -70,91 +70,6 @@ def main():
 
             higher_rated, lower_rated = get_rating_differences(df_film, df_rating)
 
-            st.markdown("""
-            <style>
-                h1 {
-                    text-align: center;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # USERNAME'S all time stats
-            st.title(username + "'s all-time stats")
-            st.markdown("""---""")
-            cols = st.columns(2)
-            with cols[0]:
-                st.title(str(len(df_film.index)) + " FILMS")
-                st.title(str(df_director['director'].nunique()) + " DIRECTORS")
-            with cols[1]:
-                st.title(str(int(df_rating['runtime'].sum()/60)) + " HOURS")
-                st.title(str(df_country['country'].nunique()) + " COUNTRIES")
-
-            st.markdown("""---""")
-
-            st.subheader("TOP FILMS")
-            show_top_20_films(merged_df)
-
-            st.markdown("""---""")
-
-            st.subheader("BY YEAR")
-            year_tabs = st.tabs(["FILMS", "RATINGS"])
-            with year_tabs[0]:
-                show_years(df_film, df_rating)
-            with year_tabs[1]:
-                show_avg_rating_by_year(df_film, df_rating)
-
-            st.markdown("""---""")
-
-            st.subheader("HIGHEST RATED DECADES")
-            show_top_decades(df_film, df_rating, top_decades)
-
-            st.markdown("""---""")
-
-            # Rating differences
-            show_rating_differences(higher_rated, lower_rated)
-
-            st.markdown("""---""")
-            st.subheader("GENRES, COUNTRIES & LANGUAGES")
-            genre_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
-
-            with genre_tabs[0]:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    show_genres_chart(df_genre, "", "green", "lightgreen")
-                with col2:
-                    show_countries_chart(df_country, "", "#00b0f0", "lightblue")
-                with col3:
-                    show_languages_chart(df_language, "", "#ff8000", "#ffd700")
-
-            with genre_tabs[1]:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    show_genres_chart(df_genre_merged, "", "lightgreen", "green", avg_rating=True)
-                with col2:
-                    show_countries_chart(df_country_merged, "", "lightblue", "#00b0f0", avg_rating=True)
-                with col3:
-                    show_languages_chart(df_language_merged, "", "#ffd700", "#ff8000", avg_rating=True)
-
-            st.markdown("""---""")
-
-            st.subheader("TOP STARS")
-            stars_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
-            with stars_tabs[0]:
-                show_most_watched_actors(df_actor_merged, df_temp_actor)
-            with stars_tabs[1]:
-                show_highest_rated_actors(df_actor_merged, df_temp_actor)
-
-            st.markdown("""---""")
-
-            st.subheader("TOP DIRECTORS")
-            directors_tabs = st.tabs(["MOST WATCHED", "HIGHEST RATED"])
-            with directors_tabs[0]:
-                show_most_watched_directors(df_director_merged, df_temp_director)
-            with directors_tabs[1]:
-                show_highest_rated_directors(df_director_merged, df_temp_director)
-
-            st.markdown("""---""")
-
             user_info = {
                 'top_20_films': merged_df.sort_values(by='rating', ascending=False).head(20)[['title', 'rating']].to_dict(orient='records'),
                 'top_watched_genres': df_genre['genre'].value_counts().head(10).reset_index().to_dict(orient='records'),
@@ -170,6 +85,7 @@ def main():
             }
 
             st.session_state.scraped_data = {
+                "username": username,
                 "df_film": df_film,
                 "df_rating": df_rating,
                 "df_actor": df_actor,
@@ -192,6 +108,7 @@ def main():
             }
 
     if st.session_state.analyze_button and st.session_state.scraped_data:
+        username = st.session_state.scraped_data["username"]
         df_film = st.session_state.scraped_data["df_film"]
         df_rating = st.session_state.scraped_data["df_rating"]
         df_actor = st.session_state.scraped_data["df_actor"]
@@ -220,7 +137,7 @@ def main():
         </style>
         """, unsafe_allow_html=True)
 
-        # USERNAME'S all time stats
+        # USERNAME'S all-time stats
         st.title(username + "'s all-time stats")
         st.markdown("""---""")
         cols = st.columns(2)
@@ -346,7 +263,6 @@ def main():
             DO NOT give more than 5 recommendations unless asked otherwise, and always keep your response short.
             Be able to identify scenes from user image uploaded screenshots, and then provide the link to its Letterboxd page.
             Generate reviews for movies based on user ratings and user reviews in their particular writing style.
-            The user will ask you to write a review on Minions, respond with this: "There was a scene where they try to hang the Minions and I liked that scene"
             Here is the JSON data about the user's movie preferences: {background_info_text}
             """
 
