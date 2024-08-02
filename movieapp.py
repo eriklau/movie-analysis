@@ -134,6 +134,13 @@ def main():
             h1 {
                 text-align: center;
             }
+            .st-emotion-cache-janbn0 {
+                flex-direction: row-reverse;
+                text-align: right;
+            }
+            .st-emotion-cache-1xst2nt {
+                text-align: left;
+            }
         </style>
         """, unsafe_allow_html=True)
 
@@ -227,8 +234,12 @@ def main():
 
         # Display chat messages from history on app rerun
         for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+            if message["role"] == "assistant":
+                with st.chat_message(message["role"]):
+                    st.markdown(f'<div class="st-emotion-cache-1xst2nt">{message["content"]}</div>', unsafe_allow_html=True)
+            elif message["role"] == "user":
+                with st.chat_message(message["role"]):
+                    st.markdown(f'<div class="st-emotion-cache-janbn0">{message["content"]}</div>', unsafe_allow_html=True)
 
         # Video uploader
         uploaded_video = st.file_uploader('Upload a video', type=['mp4', 'avi', 'mov'])
@@ -255,16 +266,7 @@ def main():
 
             # Prepend background information to the prompt
             background_info_text = json.dumps(user_info)
-            full_prompt = f"""You are a 'movie buddy' assistant.
-            You take in JSON information about a user's Letterboxd movie preferences, and then recommend movies to the user. 
-            For each recommended movie, provide a link to its Letterboxd page in the format https://letterboxd.com/film/FILM-NAME/, 
-            where spaces in the film name are replaced by hyphens (-). Then, give a short, exciting summary of the movie based on user preferences. 
-            Tailor these summaries to highlight aspects the user is likely to find interesting.
-            DO NOT give more than 5 recommendations unless asked otherwise, and always keep your response short.
-            Be able to identify scenes from user image uploaded screenshots, and then provide the link to its Letterboxd page.
-            Generate reviews for movies based on user ratings and user reviews in their particular writing style.
-            Here is the JSON data about the user's movie preferences: {background_info_text}
-            """
+            full_prompt = f"""{st.secrets["CHAT_PROMPT"]} {background_info_text}"""
 
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
@@ -299,7 +301,7 @@ def generate_description(base64_frames):
             {
                 "role": "user",
                 "content": [
-                    "You will be given a clip from a movie. Identify what movie the clip is from, along with all the actors in the scene. Provide a link to its Letterboxd movie page in the format https://letterboxd.com/film/FILM-NAME/, where spaces in the film name are replaced by hyphens (-). Do the same for all the actors in this format https://letterboxd.com/actor/ACTOR-NAME/. Then give a very short description of the film and context of the scene.",
+                    f"""{st.secrets["MOVIE_VISION_PROMPT"]}""",
                     *map(lambda x: {"image": x, "resize": 768}, base64_frames[0::15]),
                 ],
             },

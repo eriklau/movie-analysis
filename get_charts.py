@@ -329,8 +329,8 @@ def show_rating_differences(higher_rated, lower_rated):
     .movie-poster:hover {
         border-color: white;
     }
-    p {
-        text-align: center;
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        text-align: left;
     }
     </style>
     """
